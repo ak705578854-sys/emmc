@@ -1,0 +1,1229 @@
+/* =========================================================
+   EMMC POLICE / TRAFFIC BOOTH DASHBOARD
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+.police-dashboard {
+  margin: 0;
+  padding: 0;
+
+  min-height: 100vh;
+
+  background: #080d18;
+
+  color: #ffffff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.police-dashboard .top-header {
+  height: 65px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 18px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #151c2b,
+      #101827
+    );
+
+  border-bottom: 1px solid #293348;
+}
+
+.police-dashboard .logo-area {
+  display: flex;
+  align-items: center;
+
+  min-width: 165px;
+}
+
+.police-dashboard .logo-text {
+  font-size: 25px;
+
+  font-weight: bold;
+
+  letter-spacing: 1px;
+}
+
+.police-dashboard .logo-text span {
+  color: #20e070;
+}
+
+.police-dashboard .booth {
+  margin-left: 15px;
+
+  padding: 10px 16px;
+
+  border: 1px solid #414d66;
+
+  border-radius: 8px;
+
+  background: #202a3d;
+
+  font-size: 15px;
+}
+
+.police-dashboard .header-right {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+}
+
+.police-dashboard .officer {
+  display: flex;
+  align-items: center;
+
+  padding: 6px 14px;
+
+  border: 1px solid #404c64;
+
+  border-radius: 8px;
+
+  background: #202a3d;
+
+  cursor: pointer;
+
+  transition:
+    all 0.2s ease;
+}
+
+.police-dashboard .officer:hover {
+  border-color: #3b82f6;
+
+  background: #27344d;
+}
+
+.police-dashboard .officer-photo {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-right: 10px;
+
+  border-radius: 50%;
+
+  background: #2d3748;
+
+  border: 2px solid #60a5fa;
+
+  font-size: 18px;
+
+  overflow: hidden;
+
+  flex-shrink: 0;
+}
+
+.police-dashboard .officer-photo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+}
+
+.police-dashboard .officer strong {
+  display: block;
+
+  font-size: 14px;
+}
+
+.police-dashboard .officer span {
+  font-size: 11px;
+
+  color: #c7ccd6;
+}
+
+.police-dashboard .divider {
+  width: 1px;
+  height: 38px;
+
+  background: #4a5262;
+
+  margin: 0 15px;
+}
+
+.police-dashboard .header-btn {
+  border: none;
+
+  background: transparent;
+
+  color: #cbd0da;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  margin-right: 18px;
+}
+
+.police-dashboard .header-btn:hover {
+  color: #ffffff;
+}
+
+/* =========================================================
+   ALERT BAR
+   ========================================================= */
+
+.police-dashboard .alert-bar {
+  height: 50px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: #e51f28;
+
+  font-size: 18px;
+
+  box-shadow:
+    0 3px 12px rgba(255, 0, 0, 0.25);
+
+  padding: 0 12px;
+
+  text-align: center;
+}
+
+.police-dashboard .alert-icon {
+  margin-right: 12px;
+}
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.police-dashboard .main-container {
+  display: grid;
+
+  grid-template-columns:
+    minmax(500px, 1fr)
+    350px;
+
+  gap: 18px;
+
+  padding: 18px;
+
+  min-height:
+    calc(100vh - 115px);
+}
+
+/* =========================================================
+   GPS
+   ========================================================= */
+
+.police-dashboard .gps-section {
+  position: relative;
+
+  min-width: 0;
+
+  height: 550px;
+}
+
+.police-dashboard #gpsMap {
+  width: 100%;
+  height: 100%;
+
+  border: 2px solid #354158;
+
+  border-radius: 11px;
+
+  overflow: hidden;
+
+  background: #101827;
+
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.police-dashboard .gps-section.gps-fs {
+  position: fixed !important;
+
+  inset: 0 !important;
+
+  z-index: 9990;
+
+  background: #080d18;
+
+  padding: 14px;
+
+  height: 100vh !important;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
+.police-dashboard
+.gps-section.gps-fs
+#gpsMap {
+  flex: 1;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 0;
+
+  border: none;
+}
+
+/* =========================================================
+   MAP STATUS
+   ========================================================= */
+
+.police-dashboard .map-status {
+  position: absolute;
+
+  top: 14px;
+  left: 14px;
+
+  z-index: 1000;
+
+  padding: 9px 13px;
+
+  border-radius: 7px;
+
+  background:
+    rgba(8, 13, 24, 0.92);
+
+  border: 1px solid #3c4a63;
+
+  font-size: 13px;
+
+  pointer-events: none;
+}
+
+.police-dashboard .live-dot {
+  display: inline-block;
+
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+
+  background: #24e06f;
+
+  margin-right: 6px;
+
+  box-shadow:
+    0 0 8px #24e06f;
+}
+
+/* =========================================================
+   GPS BUTTON
+   ========================================================= */
+
+.police-dashboard .gps-button {
+  position: absolute;
+
+  right: 15px;
+  bottom: 15px;
+
+  z-index: 1000;
+
+  border: 1px solid #53627a;
+
+  padding: 11px 15px;
+
+  border-radius: 8px;
+
+  background: #18253a;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: bold;
+}
+
+.police-dashboard .gps-button:hover {
+  background: #243650;
+}
+
+/* =========================================================
+   MAP LABEL
+   ========================================================= */
+
+.police-dashboard .map-custom-label {
+  background: #0f172a;
+
+  color: #ffffff;
+
+  font-size: 0.72rem;
+
+  font-weight: 600;
+
+  padding: 3px 8px;
+
+  border-radius: 6px;
+
+  border: 1px solid #334155;
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4);
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   MAP MARKERS
+   ========================================================= */
+
+.police-dashboard .ambulance-marker-wrapper {
+  position: relative;
+
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  filter:
+    drop-shadow(
+      0 3px 6px rgba(0, 0, 0, 0.4)
+    );
+}
+
+.police-dashboard .ambulance-arrow {
+  transform: rotate(45deg);
+}
+
+.police-dashboard .ambulance-marker-center {
+  position: absolute;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.police-dashboard .ambulance-marker-center div {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #dc2626;
+}
+
+.police-dashboard .police-marker-wrapper {
+  position: relative;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.police-dashboard .police-marker-circle {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  border: 2.5px solid #0284c7;
+
+  box-shadow:
+    0 4px 10px rgba(2, 132, 199, 0.5);
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.police-dashboard .hospital-pin-wrapper {
+  filter:
+    drop-shadow(
+      0 4px 8px rgba(0, 0, 0, 0.4)
+    );
+}
+
+.police-dashboard .patient-marker-circle {
+  width: 24px;
+  height: 24px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  border: 2px solid #8b5cf6;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.police-dashboard .patient-marker-circle div {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: #8b5cf6;
+}
+
+/* =========================================================
+   RIGHT PANEL
+   ========================================================= */
+
+.police-dashboard .right-panel {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+/* =========================================================
+   INFO CARD
+   ========================================================= */
+
+.police-dashboard .info-card {
+  border: 2px solid #d94d51;
+
+  border-radius: 11px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      #161d2c,
+      #101621
+    );
+
+  position: relative;
+}
+
+.police-dashboard .info-card h2 {
+  padding: 12px 60px 12px 15px;
+
+  font-size: 17px;
+
+  border-bottom: 1px solid #344056;
+}
+
+.police-dashboard .card-scroll-btns {
+  position: absolute;
+
+  top: 8px;
+  right: 10px;
+
+  z-index: 5;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.police-dashboard .card-scroll-btn {
+  width: 26px;
+  height: 22px;
+
+  border: 1px solid #46536a;
+
+  border-radius: 5px;
+
+  background: #1c2538;
+
+  color: #cbd0da;
+
+  font-size: 10px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.police-dashboard .card-scroll-btn:hover {
+  background: #2563eb;
+
+  color: #ffffff;
+}
+
+.police-dashboard .card-content {
+  padding: 16px;
+
+  max-height: 240px;
+
+  overflow-y: auto;
+
+  scroll-behavior: smooth;
+}
+
+.police-dashboard .card-content h1 {
+  font-size: 22px;
+
+  margin-bottom: 5px;
+}
+
+.police-dashboard .card-content p,
+.police-dashboard .patient-content p {
+  color: #aeb5c2;
+
+  font-size: 14px;
+
+  margin-top: 8px;
+
+  line-height: 1.4;
+}
+
+.police-dashboard .card-content strong,
+.police-dashboard .patient-content strong {
+  color: #ffffff;
+}
+
+.police-dashboard .driver-box {
+  margin-top: 14px;
+
+  padding: 12px;
+
+  border-radius: 9px;
+
+  background: #252f44;
+}
+
+.police-dashboard .driver-box h3 {
+  margin-bottom: 5px;
+
+  font-size: 14px;
+}
+
+.police-dashboard .driver-box p {
+  font-size: 13px;
+}
+
+.police-dashboard .patient-content {
+  padding: 16px;
+}
+
+.police-dashboard .critical {
+  color: #ff4c4c !important;
+}
+
+.police-dashboard .blue-text {
+  color: #60a5fa !important;
+}
+
+.police-dashboard .route-action {
+  color: #38bdf8 !important;
+}
+
+.police-dashboard .phone-link {
+  color: #60a5fa;
+
+  text-decoration: none;
+}
+
+.police-dashboard .sync {
+  margin-top: 15px;
+
+  color: #b0b6c2;
+
+  font-size: 12px;
+}
+
+.police-dashboard .sync span {
+  color: #ff3e43;
+
+  margin-right: 6px;
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+
+.police-dashboard .modal-backdrop {
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(4, 8, 16, 0.75);
+
+  backdrop-filter: blur(5px);
+
+  z-index: 9999;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+}
+
+.police-dashboard .modal-backdrop.open {
+  display: flex;
+}
+
+.police-dashboard .modal-card {
+  background: #151c2b;
+
+  width: 100%;
+
+  max-width: 520px;
+
+  border-radius: 14px;
+
+  border: 1px solid #35425b;
+
+  box-shadow:
+    0 20px 30px rgba(0, 0, 0, 0.6);
+
+  overflow: hidden;
+}
+
+.police-dashboard .modal-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 16px 20px;
+
+  background: #1c2538;
+
+  border-bottom: 1px solid #2e3b52;
+}
+
+.police-dashboard .modal-header h3 {
+  font-size: 17px;
+
+  color: #f1f5f9;
+}
+
+.police-dashboard .close-modal-btn {
+  background: transparent;
+
+  border: none;
+
+  color: #94a3b8;
+
+  font-size: 22px;
+
+  cursor: pointer;
+}
+
+.police-dashboard .modal-body {
+  padding: 20px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.police-dashboard .id-search-box {
+  display: flex;
+
+  gap: 10px;
+
+  background: #0f1522;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  border: 1px solid #28354c;
+}
+
+.police-dashboard .id-search-box input {
+  flex: 1;
+
+  background: #1a2335;
+
+  border: 1px solid #3b4963;
+
+  color: white;
+
+  padding: 8px 12px;
+
+  border-radius: 6px;
+
+  outline: none;
+}
+
+.police-dashboard .id-search-box input:focus {
+  border-color: #3b82f6;
+}
+
+.police-dashboard .id-search-box button {
+  background: #2563eb;
+
+  color: white;
+
+  border: none;
+
+  padding: 8px 16px;
+
+  border-radius: 6px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.police-dashboard .id-search-box button:hover {
+  background: #1d4ed8;
+}
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+.police-dashboard .profile-card-details {
+  display: flex;
+
+  gap: 18px;
+
+  background: #1a2335;
+
+  padding: 16px;
+
+  border-radius: 10px;
+
+  border: 1px solid #2e3d57;
+}
+
+.police-dashboard
+.profile-avatar-upload-area {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.police-dashboard .modal-avatar-circle {
+  width: 80px;
+  height: 80px;
+
+  border-radius: 50%;
+
+  background: #243048;
+
+  border: 3px solid #3b82f6;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 34px;
+
+  overflow: hidden;
+}
+
+.police-dashboard
+.modal-avatar-circle img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.police-dashboard .upload-label {
+  font-size: 11px;
+
+  color: #60a5fa;
+
+  cursor: pointer;
+
+  text-decoration: underline;
+
+  text-align: center;
+}
+
+.police-dashboard .upload-label input {
+  display: none;
+}
+
+.police-dashboard .profile-data-list {
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+
+  font-size: 13px;
+
+  color: #cbd5e1;
+}
+
+.police-dashboard
+.profile-data-list div {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border-bottom: 1px dashed #2d3b54;
+
+  padding-bottom: 4px;
+}
+
+.police-dashboard
+.profile-data-list span {
+  color: #94a3b8;
+}
+
+.police-dashboard
+.profile-data-list strong {
+  color: #ffffff;
+
+  font-weight: 600;
+
+  text-align: right;
+}
+
+.police-dashboard .service-id {
+  color: #60a5fa !important;
+}
+
+/* =========================================================
+   MODAL FOOTER
+   ========================================================= */
+
+.police-dashboard .modal-footer {
+  padding: 12px 20px;
+
+  background: #1c2538;
+
+  border-top: 1px solid #2e3b52;
+
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+.police-dashboard .modal-footer button {
+  background: #334155;
+
+  color: white;
+
+  border: none;
+
+  padding: 8px 16px;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+.police-dashboard .modal-footer button:hover {
+  background: #475569;
+}
+
+/* =========================================================
+   LOGOUT MODAL
+   ========================================================= */
+
+.police-dashboard .logout-modal-card {
+  width: 100%;
+
+  max-width: 400px;
+
+  background: #151c2b;
+
+  border-radius: 14px;
+
+  border: 1px solid #35425b;
+
+  box-shadow:
+    0 20px 30px rgba(0, 0, 0, 0.6);
+
+  overflow: hidden;
+
+  text-align: center;
+}
+
+.police-dashboard .logout-modal-body {
+  padding: 25px 20px 20px;
+}
+
+.police-dashboard .logout-icon {
+  width: 50px;
+  height: 50px;
+
+  margin: 0 auto 13px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(229, 31, 40, 0.12);
+
+  border: 1px solid rgba(229, 31, 40, 0.3);
+
+  color: #ff5b63;
+
+  font-size: 23px;
+}
+
+.police-dashboard .logout-modal-body h3 {
+  margin: 0 0 10px;
+
+  font-size: 18px;
+
+  color: #f1f5f9;
+}
+
+.police-dashboard .logout-modal-body p {
+  margin: 0;
+
+  color: #aeb5c2;
+
+  font-size: 13px;
+}
+
+.police-dashboard .logout-actions {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 12px;
+
+  padding: 0 20px 20px;
+}
+
+.police-dashboard .cancel-btn,
+.police-dashboard .logout-confirm-btn {
+  padding: 10px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+}
+
+.police-dashboard .cancel-btn {
+  background: #1a2335;
+
+  color: #ffffff;
+
+  border: 1px solid #3b4963;
+}
+
+.police-dashboard .cancel-btn:hover {
+  background: #253149;
+}
+
+.police-dashboard .logout-confirm-btn {
+  background: #e51f28;
+
+  color: #ffffff;
+
+  border: none;
+}
+
+.police-dashboard .logout-confirm-btn:hover {
+  background: #c91a22;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .police-dashboard .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  .police-dashboard .gps-section {
+    height: 500px;
+  }
+
+  .police-dashboard .right-panel {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 750px) {
+  .police-dashboard .top-header {
+    height: auto;
+
+    min-height: 65px;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    padding: 10px;
+  }
+
+  .police-dashboard .logo-area {
+    min-width: auto;
+  }
+
+  .police-dashboard .booth {
+    margin-left: 0;
+
+    font-size: 12px;
+
+    padding: 8px 10px;
+  }
+
+  .police-dashboard .header-right {
+    width: 100%;
+
+    justify-content: flex-end;
+
+    margin-left: 0;
+  }
+
+  .police-dashboard .officer {
+    padding: 5px 8px;
+  }
+
+  .police-dashboard .officer strong {
+    font-size: 11px;
+  }
+
+  .police-dashboard .header-btn {
+    font-size: 11px;
+
+    margin-right: 8px;
+  }
+
+  .police-dashboard .alert-bar {
+    height: auto;
+
+    min-height: 50px;
+
+    padding: 10px;
+
+    font-size: 12px;
+  }
+
+  .police-dashboard .main-container {
+    padding: 10px;
+
+    gap: 10px;
+  }
+
+  .police-dashboard .gps-section {
+    height: 430px;
+  }
+
+  .police-dashboard .right-panel {
+    display: flex;
+  }
+
+  .police-dashboard .profile-card-details {
+    flex-direction: column;
+
+    align-items: center;
+  }
+
+  .police-dashboard .profile-data-list {
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .police-dashboard .logo-text {
+    font-size: 18px;
+  }
+
+  .police-dashboard .officer-photo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .police-dashboard .officer > div:last-child {
+    display: none;
+  }
+
+  .police-dashboard .divider {
+    display: none;
+  }
+
+  .police-dashboard .gps-section {
+    height: 350px;
+  }
+
+  .police-dashboard .map-status {
+    font-size: 10px;
+
+    top: 8px;
+    left: 8px;
+  }
+
+  .police-dashboard .gps-button {
+    right: 8px;
+    bottom: 8px;
+
+    padding: 8px 10px;
+
+    font-size: 11px;
+  }
+
+  .police-dashboard .info-card h2 {
+    font-size: 14px;
+  }
+}

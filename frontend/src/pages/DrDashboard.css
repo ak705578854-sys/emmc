@@ -1,0 +1,178 @@
+*, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; padding: 0; background: #f1f5f9; font-family: 'Inter', sans-serif; }
+
+    /* App Shell */
+    .app-shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #f1f5f9; }
+    .app-header { height: 80px; background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px 0 0; z-index: 200; flex-shrink: 0; }
+    
+    /* Brand Logo Box */
+    .app-brand { width: 280px; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 12px; border-right: 1px solid #e2e8f0; flex-shrink: 0; background: #fff; }
+
+    .app-title { padding-left: 24px; flex: 1; }
+    .app-title .ht-name { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .app-title .ht-role { font-size: 0.78rem; color: #475569; }
+    .app-hdr-right { display: flex; align-items: center; gap: 18px; }
+    .app-avatar { width: 38px; height: 38px; background: #e2e8f0; color: #1e293b; font-weight: 700; font-size: 0.84rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+    .app-sidebar { width: 280px; background: #0c1829; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 14px 24px; flex-shrink: 0; }
+    .app-nav { display: flex; flex-direction: column; gap: 6px; }
+    .app-nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 24px; font-size: 0.87rem; font-weight: 500; color: #94a3b8; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .app-nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .app-nav-item.active { background: #2563eb; color: #fff; }
+    .app-nav-item .ni { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .app-nav-item .nl { flex: 1; }
+    .nav-tag { background: rgba(255,255,255,0.22); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; margin-left: auto; }
+    .nav-cnt { background: #2563eb; color: #fff; font-size: 0.68rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; }
+    .app-sidebar-foot { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }
+    .app-logout { display: flex; align-items: center; gap: 12px; padding: 11px 16px; font-size: 0.87rem; font-weight: 500; color: #94a3b8; cursor: pointer; border-radius: 20px; transition: all 0.2s; }
+    .app-logout:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .app-logout .ni { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .app-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+    .sec-pane { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; min-height: 100%; }
+
+    /* Dashboard UI */
+    .ds-top-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    .ds-gps-banner { padding: 16px 20px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; color: #fff; }
+    .ds-gps-banner.gps-on { background: linear-gradient(135deg,#10b981,#059669); }
+    .ds-gps-banner.gps-off { background: linear-gradient(135deg,#f59e0b,#d97706); }
+    .ds-gps-banner button { background: #fff; color: #1e293b; border: none; font-weight: 600; font-size: 0.82rem; padding: 9px 15px; border-radius: 8px; cursor: pointer; }
+    .ds-gps-card { background: #fff; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,.05); color: #0f172a; }
+    .ds-pill { font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 12px; }
+    .ds-pill.on { background: #dcfce7; color: #15803d; }
+    .ds-pill.off { background: #fee2e2; color: #b91c1c; }
+    .ds-sw { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .ds-sw input { opacity: 0; width: 0; height: 0; }
+    .ds-sl { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 24px; transition: .3s; }
+    .ds-sl:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
+    .ds-sw input:checked + .ds-sl { background: #10b981; }
+    .ds-sw input:checked + .ds-sl:before { transform: translateX(20px); }
+
+    .ds-info-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    .ds-ic { background: #fff; padding: 14px 16px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); border: 1px solid transparent; color: #0f172a; }
+    .ds-ic svg { width: 24px; height: 24px; color: #2563eb; flex-shrink: 0; }
+    .ds-ic small { color: #64748b; font-size: 0.73rem; display: block; }
+    .ds-ic h4 { color: #0f172a; font-size: 0.93rem; font-weight: 700; margin-top: 2px; }
+    .ds-crew { cursor: pointer; border-color: #e2e8f0; }
+    .ds-crew-hint { display: block; font-size: 0.67rem; color: #3b82f6; font-weight: 600; margin-top: 2px; }
+
+    .ds-pri { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .ds-pri.pr-red { background: #fef2f2!important; border-color: #fecaca!important; }
+    .ds-pri.pr-orange { background: #fff7ed!important; border-color: #ffedd5!important; }
+    .ds-pri.pr-green { background: #f0fdf4!important; border-color: #dcfce7!important; }
+    .ds-pri-opts { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 12px; }
+    .ds-pb { border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .ds-pb.red { background: #fff5f5; border: 1.5px solid #fecaca; color: #b91c1c; }
+    .ds-pb.red.sel { background: #dc2626!important; color: #fff!important; }
+    .ds-pb.orange { background: #fffaf5; border: 1.5px solid #fed7aa; color: #c2410c; }
+    .ds-pb.orange.sel { background: #ea580c!important; color: #fff!important; }
+    .ds-pb.green { background: #f4fdf7; border: 1.5px solid #bbf7d0; color: #16a34a; }
+    .ds-pb.green.sel { background: #16a34a!important; color: #fff!important; }
+
+    .ds-content { display: grid; grid-template-columns: 2.2fr 1fr; gap: 16px; flex: 1; min-height: 330px; }
+    .ds-map-wrap { background: #fff; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,.05); position: relative; }
+    .ds-map-wrap.ds-map-fs { position: fixed !important; inset: 0 !important; z-index: 9990 !important; background: #0f172a; border-radius: 0 !important; padding: 0; }
+    .ds-map-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: #475569; font-size: .83rem; }
+    .ds-map-box { flex: 1; border-radius: 8px; overflow: hidden; min-height: 250px; }
+    .ds-map-fsBtn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; color: #475569; }
+
+    .ds-rp { display: flex; flex-direction: column; gap: 14px; }
+    .ds-vc, .ds-tc { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); color: #0f172a; }
+    .ds-vr { display: flex; justify-content: space-between; font-size: .8rem; padding: 6px 0; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-weight: 500; }
+    .ds-vr span { color: #64748b; font-weight: 400; }
+    .ds-tp { display: inline-block; font-size: .73rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; margin-bottom: 8px; }
+    .ds-tp.on { background: #dcfce7; color: #15803d; }
+    .ds-tp.off { background: #fee2e2; color: #b91c1c; }
+
+    /* Assignment Screen */
+    #assignment-screen { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; background: #f1f5f9; overflow-y: auto; }
+    .assignment-top { height: 88px; background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 34px; }
+    .assignment-main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 34px; }
+    .assignment-card { width: min(1180px, 100%); background: #ffffff; border-radius: 18px; border: 1px solid #e2e8f0; box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08); overflow: hidden; }
+    .assignment-alert { background: #8f1111; color: #ffffff; padding: 25px 32px; display: flex; align-items: center; gap: 20px; }
+    .assignment-body { padding: 28px 32px 32px; color: #0f172a; }
+    .ready-switch { position: relative; width: 58px; height: 32px; flex-shrink: 0; }
+    .ready-switch input { opacity: 0; width: 0; height: 0; }
+    .ready-slider { position: absolute; inset: 0; cursor: pointer; background: #cbd5e1; border-radius: 32px; transition: 0.25s; }
+    .ready-slider::before { content: ""; position: absolute; width: 24px; height: 24px; left: 4px; top: 4px; border-radius: 50%; background: #ffffff; transition: 0.25s; }
+    .ready-switch input:checked + .ready-slider { background: #8f1111; }
+    .ready-switch input:checked + .ready-slider::before { transform: translateX(26px); }
+
+    /* Crew Modal Styles */
+    .crew-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
+    .crew-backdrop.open { display: flex; }
+    .crew-modal { background: #fff; width: 100%; max-width: 520px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,.2); overflow: hidden; color: #0f172a; }
+    .crew-hdr { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+    .crew-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; max-height: 68vh; overflow-y: auto; }
+    .crew-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+    .crew-avt { width: 44px; height: 44px; border-radius: 50%; background: #dbeafe; color: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .95rem; flex-shrink: 0; }
+    .crew-info { flex: 1; }
+    .crew-name { font-size: .97rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+    .crew-rtag { font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #e0f2fe; color: #0369a1; }
+    .crew-sub { font-size: .78rem; color: #475569; margin-top: 3px; }
+    .crew-id { font-size: .73rem; color: #64748b; margin-top: 2px; font-family: monospace; font-weight: 600; }
+    .crew-ftr { padding: 12px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; }
+
+    /* Logout Modal Styles */
+    .logout-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px; }
+    .logout-backdrop.open { display: flex; }
+    .logout-card { background: #ffffff; width: 100%; max-width: 440px; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.22); overflow: hidden; position: relative; padding: 24px 28px; }
+
+    /* Leaflet Tooltip */
+    .mcl { background: #0f172a!important; color: #fff!important; font-size: .7rem!important; font-weight: 600!important; padding: 3px 8px!important; border-radius: 6px!important; border: 1px solid #334155!important; white-space: nowrap!important; }
+/* =========================================================
+   EMMC REAL MAP EMBEDDED INSIDE ORIGINAL DrDashboard
+   The original dashboard layout remains unchanged; these rules
+   only make the existing EMMC LiveMap fill the original map box.
+   ========================================================= */
+.embedded-map-card {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+.embedded-map-card > div:first-child,
+.embedded-map-card .map-top-controls,
+.embedded-map-card .info {
+  display: none !important;
+}
+.embedded-map-card .map {
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 0;
+}
+.embedded-map-card .leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 0;
+  border-radius: 0;
+}
+.route-arrow-marker, .moving-ambulance-arrow-marker {
+  background: transparent !important;
+  border: 0 !important;
+}
+.route-arrow-marker div {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
+}
+.moving-ambulance-arrow {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  color: #2563eb;
+  text-shadow: 0 2px 4px rgba(255,255,255,.95), 0 0 8px rgba(37,99,235,.45);
+  animation: ambulanceArrowPulse 1s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes ambulanceArrowPulse {
+  0%, 100% { opacity: .78; transform: scale(.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
