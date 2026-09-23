@@ -1,5 +1,7 @@
-import FrontPage from "./pages/front.jsx";
-
 export default function App() {
-  return <FrontPage />;
+  return (
+    <div style={{ padding: "50px", fontSize: "30px" }}>
+      EMMC TEST PAGE
+    </div>
+  );
 }
