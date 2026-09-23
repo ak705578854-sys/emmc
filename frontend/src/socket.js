@@ -1,5 +1,12 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const BACKEND_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://emmc-push-backend.onrender.com";
+
+const socket = io(BACKEND_URL, {
+  transports: ["websocket", "polling"],
+  withCredentials: true,
+});
 
 export default socket;
