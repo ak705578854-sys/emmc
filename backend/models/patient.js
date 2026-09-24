@@ -120,6 +120,12 @@ const patientSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
+
+      fullAddress: {
+        type: String,
+        default: "",
+        trim: true,
+      },
     },
 
     // ==========================================
