@@ -111,7 +111,7 @@ export default function CreatePatientPassword() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/patients/create-password",
+        "https://emmc-push-backend.onrender.com/api/patients/create-password",
         {
           method: "POST",
 
