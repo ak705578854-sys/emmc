@@ -111,6 +111,10 @@ const registerPatient = async (
       consent1,
       consent2,
       consent3,
+      // Current frontend uses one full-address field and two emergency fields.
+      address: fullAddress,
+      emergencyContact,
+      emergencyContactName,
     } = req.body;
 
     // ========================================
@@ -273,17 +277,26 @@ const registerPatient = async (
 
           pincode:
             pincode || "",
+
+          fullAddress:
+            typeof fullAddress === "string"
+              ? fullAddress.trim()
+              : "",
         },
 
         emergencyContact: {
           name:
-            emName || "",
+            emName ||
+            emergencyContactName ||
+            "",
 
           relation:
             emRelation || "",
 
           phone:
-            emPhone || "",
+            emPhone ||
+            emergencyContact ||
+            "",
 
           note:
             emNote || "",
