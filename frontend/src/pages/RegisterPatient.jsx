@@ -137,12 +137,15 @@ export default function RegisterPatient() {
             bloodGroup: form.bloodGroup,
 
             address: form.address.trim(),
+            fullAddress: form.address.trim(),
 
             emergencyContact:
               form.emergencyContact.trim(),
 
             emergencyContactName:
               form.emergencyContactName.trim(),
+            emPhone: form.emergencyContact.trim(),
+            emName: form.emergencyContactName.trim(),
           }),
         }
       );
@@ -170,7 +173,7 @@ export default function RegisterPatient() {
           submit:
             data.message ||
             data.error ||
-            "Patient registration failed.",
+            `Patient registration failed (HTTP ${response.status}).`,
         });
 
         return;
@@ -254,7 +257,8 @@ export default function RegisterPatient() {
 
       setErrors({
         submit:
-          "Cannot connect to backend. Please make sure the backend is running on port 5000.",
+          error?.message ||
+          "Cannot connect to the EMMC Render backend.",
       });
     }
   };
