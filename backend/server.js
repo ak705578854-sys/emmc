@@ -75,7 +75,9 @@ const configuredOrigins = String(process.env.FRONTEND_ORIGIN || "")
   .filter(Boolean);
 
 function isAllowedOrigin(origin) {
-  if (!origin) return true;
+  // The LHO registration page is rendered inside a srcDoc iframe.
+  // Browsers send Origin: null for that document, so explicitly allow it.
+  if (!origin || origin === "null") return true;
   const normalized = normalizeOrigin(origin);
 
   if (configuredOrigins.includes(normalized)) return true;
@@ -115,6 +117,16 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/lho", lhoRoutes);
+
+// Always return JSON for unknown API routes. This prevents the frontend
+// from receiving Express's default HTML "Cannot POST ..." page and then
+// failing with: Unexpected token '<' / <!DOCTYPE.
+app.use("/api", (req, res) => {
+  return res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+  });
+});
 
 // ============================================================
 // HELPERS
