@@ -168,9 +168,20 @@ export default function HospitalRegistration() {
       const payload = {
         ...form,
 
-        ambulanceFleetSize: form.ambulanceFleetSize
+        // Map the current six-step UI to the backend's nested schema.
+        address: {
+          addressLine: form.address,
+          district: form.district,
+          state: form.state,
+          pincode: form.pincode,
+        },
+
+        ambulanceAvailable: Boolean(form.ambulanceFleetSize),
+        ambulanceCount: form.ambulanceFleetSize
           ? Number(form.ambulanceFleetSize)
           : 0,
+
+        emergencyContact: form.emergencyPhone || form.emergencyContactPerson || "",
 
         authorizedRepresentative: {
           name: form.representativeName,
@@ -188,10 +199,21 @@ export default function HospitalRegistration() {
           "Content-Type": "application/json",
         },
 
+        credentials: "include",
+
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data = {};
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        throw new Error(
+          `Backend returned a non-JSON response (HTTP ${response.status}). Please make sure the Render backend has the latest hospital routes deployed.`
+        );
+      }
 
       if (!response.ok) {
         throw new Error(
