@@ -119,8 +119,6 @@ export default function RegisterPatient() {
             "Content-Type": "application/json",
           },
 
-          credentials: "include",
-
           body: JSON.stringify({
             name: form.name.trim(),
 
