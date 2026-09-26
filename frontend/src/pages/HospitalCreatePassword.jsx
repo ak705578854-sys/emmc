@@ -80,7 +80,7 @@ export default function HospitalCreatePassword() {
 
     try {
       const response = await fetch(
-        "https://emmc-push-backend.onrender.com/api/hospitals/create-password",
+        "https://emmc.onrender.com/api/hospitals/create-password",
         {
           method: "POST",
 
