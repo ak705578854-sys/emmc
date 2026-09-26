@@ -12,7 +12,7 @@ const handleSignupSubmit = async (e) => {
   }
 
   try {
-    const response = await fetch("http://localhost:5000/api/patients/register", {
+    const response = await fetch("https://emmc.onrender.com/api/patients/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include", // sends and receives the HTTP-only cookie
@@ -51,7 +51,7 @@ const handleLoginSubmit = async (e) => {
   const password = loginForm.password;
 
   try {
-    const response = await fetch("http://localhost:5000/api/patients/login", {
+    const response = await fetch("https://emmc.onrender.com/api/patients/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -83,7 +83,7 @@ const handleLoginSubmit = async (e) => {
 // 3. Replace handleLogout inside EMMCApp.jsx:
 const handleLogout = async () => {
   try {
-    await fetch("http://localhost:5000/api/patients/logout", {
+    await fetch("https://emmc.onrender.com/api/patients/logout", {
       method: "POST",
       credentials: "include",
     });
@@ -95,7 +95,7 @@ const handleLogout = async () => {
   setLoginForm({ email: "", password: "" });
 };
 
-const res = await fetch("http://localhost:5000/api/auth/signin", {
+const res = await fetch("https://emmc.onrender.com/api/auth/signin", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
