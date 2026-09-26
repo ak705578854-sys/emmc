@@ -60,7 +60,7 @@ export default function LHOCreatePassword() {
        * }
        */
 
-      const response = await fetch("https://emmc-push-backend.onrender.com/api/lho/create-password", {
+      const response = await fetch("https://emmc.onrender.com/api/lho/create-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
