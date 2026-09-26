@@ -192,7 +192,7 @@ export default function HospitalRegistration() {
         },
       };
 
-      const response = await fetch("https://emmc-push-backend.onrender.com/api/hospitals/register", {
+      const response = await fetch("https://emmc.onrender.com/api/hospitals/register", {
         method: "POST",
 
         headers: {
