@@ -660,7 +660,7 @@ export default function LoginPage() {
 
       const response =
         await fetch(
-          endpoint.startsWith("http") ? endpoint : `https://emmc-push-backend.onrender.com${endpoint}`,
+          endpoint.startsWith("http") ? endpoint : `https://emmc.onrender.com${endpoint}`,
           {
 
             method:
