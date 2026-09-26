@@ -111,7 +111,7 @@ export default function RegisterPatient() {
 
     try {
       const response = await fetch(
-        "https://emmc-push-backend.onrender.com/api/patients/register",
+        "https://emmc.onrender.com/api/patients/register",
         {
           method: "POST",
 
