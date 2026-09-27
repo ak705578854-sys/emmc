@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+
+/* EMMC live maps: keep pan/pinch/scroll gestures inside the map only. */
+.emmc-real-map-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.emmc-real-map-shell .leaflet-container {
+  width: 100%;
+  height: 100%;
+  touch-action: none !important;
+  overscroll-behavior: contain;
+}
