@@ -6,6 +6,7 @@ import {
   Popup,
   Polyline,
   Circle,
+  useMap,
 } from "react-leaflet";
 import { io } from "socket.io-client";
 import L from "leaflet";
@@ -237,6 +238,22 @@ function getActiveAmbulances(ambulanceLocations) {
   });
 }
 
+// Keeps the Leaflet viewport locked to the latest real GPS position.
+// MapContainer's center prop is only used at initial mount, so without
+// this helper the map can remain at the hospital/default location.
+function LiveGpsViewport({ position }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!isValidLocation(position)) return;
+
+    const currentZoom = map.getZoom();
+    map.setView(position, currentZoom, { animate: false });
+  }, [map, position]);
+
+  return null;
+}
+
 // =====================================================
 // MAIN COMPONENT
 // =====================================================
@@ -360,11 +377,22 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
       return gpsLocation;
     }
 
+    if (activePrimaryAmbulance && isValidCoordinate(
+      Number(activePrimaryAmbulance.latitude),
+      Number(activePrimaryAmbulance.longitude)
+    )) {
+      return [
+        Number(activePrimaryAmbulance.latitude),
+        Number(activePrimaryAmbulance.longitude),
+      ];
+    }
+
     return null;
 
   }, [
     backendLocation,
     gpsLocation,
+    activePrimaryAmbulance,
   ]);
 
   // ===================================================
@@ -1382,7 +1410,7 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           MAP
       ================================================= */}
 
-      <div className="map">
+      <div className="map emmc-real-map-shell">
 
         <MapContainer
           center={
@@ -1405,6 +1433,10 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           zoomControl={true}
           keyboard={true}
         >
+
+          <LiveGpsViewport
+            position={ambulanceLocation}
+          />
 
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
