@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
-  useMap,
   TileLayer,
   Marker,
   Popup,
@@ -119,23 +118,6 @@ function isValidLocation(location) {
       Number(location[1])
     )
   );
-}
-
-
-// =====================================================
-// LIVE MAP FOLLOW
-// =====================================================
-// Keeps the map centered on the device's freshest GPS without
-// changing the user's selected zoom level.
-function MapFollow({ location, enabled = true }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!enabled || !isValidLocation(location)) return;
-    map.setView(location, map.getZoom(), { animate: false });
-  }, [location, enabled, map]);
-
-  return null;
 }
 
 // =====================================================
@@ -364,8 +346,10 @@ export default function LiveMap({
   // ===================================================
 
   const ambulanceLocation = useMemo(() => {
-    // The device GPS is authoritative for this ambulance dashboard.
-    // Backend/socket data is only a fallback until the phone gets its first fix.
+
+    // The phone's own REAL GPS is always the primary source for its own marker.
+    // Backend/socket data is only a fallback, so an older server position can
+    // never overwrite the live position shown on this device.
     if (isValidLocation(gpsLocation)) {
       return gpsLocation;
     }
@@ -375,18 +359,40 @@ export default function LiveMap({
     }
 
     return null;
+
   }, [gpsLocation, backendLocation]);
 
   // ===================================================
   // ACTUAL AMBULANCE GPS
   // ===================================================
 
-  const actualAmbulanceGPS = useMemo(() => {
-    // Always use the freshest local phone GPS for distance/alerts.
-    if (isValidLocation(gpsLocation)) return gpsLocation;
-    if (isValidLocation(backendLocation)) return backendLocation;
-    return null;
-  }, [gpsLocation, backendLocation]);
+  const actualAmbulanceGPS =
+    useMemo(() => {
+
+      // The device's fresh GPS is the authoritative location for this device.
+      // Never let an older backend/socket position replace it.
+      if (
+        isValidLocation(
+          gpsLocation
+        )
+      ) {
+        return gpsLocation;
+      }
+
+      if (
+        isValidLocation(
+          backendLocation
+        )
+      ) {
+        return backendLocation;
+      }
+
+      return null;
+
+    }, [
+      gpsLocation,
+      backendLocation,
+    ]);
 
   // ===================================================
   // ACTUAL POLICE DISTANCE
@@ -979,7 +985,6 @@ export default function LiveMap({
   // ===================================================
 
   useEffect(() => {
-
     if (!gpsEnabled) {
       setGpsError("");
       return;
@@ -990,171 +995,85 @@ export default function LiveMap({
       return;
     }
 
-    if (
-      !navigator.geolocation
-    ) {
-
-      setGpsError(
-        "This browser/device does not support Geolocation."
-      );
-
+    if (!navigator.geolocation) {
+      setGpsError("This browser/device does not support Geolocation.");
       return;
     }
 
-    const id =
-      navigator.geolocation.watchPosition(
+    let alive = true;
+    let watchId = null;
 
-        async (position) => {
+    const handlePosition = async (position) => {
+      if (!alive) return;
 
-          const latitude =
-            Number(
-              position.coords.latitude
-            );
+      const latitude = Number(position.coords.latitude);
+      const longitude = Number(position.coords.longitude);
+      const accuracy = Number(position.coords.accuracy);
 
-          const longitude =
-            Number(
-              position.coords.longitude
-            );
+      if (!isValidCoordinate(latitude, longitude)) return;
 
-          // -------------------------------------------
-          // VALIDATE ACTUAL GPS
-          // -------------------------------------------
+      const location = [latitude, longitude];
+      const previous = previousAmbulanceLocationRef.current;
+      if (previous) setAmbulanceHeading(bearingDegrees(previous, location));
+      previousAmbulanceLocationRef.current = location;
 
-          if (
-            !isValidCoordinate(
-              latitude,
-              longitude
-            )
-          ) {
+      // IMPORTANT: update the local marker immediately. Do not wait for backend.
+      setGpsLocation(location);
+      setGpsError("");
+      setLastUpdated(new Date());
 
-            console.warn(
-              "Invalid ambulance GPS ignored"
-            );
-
-            return;
-          }
-
-          const location = [
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/ambulance/location`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ambulanceId: deviceAmbulanceId,
             latitude,
             longitude,
-          ];
-
-          // -------------------------------------------
-          // LOCAL ACTUAL GPS
-          // -------------------------------------------
-
-          const previous = previousAmbulanceLocationRef.current;
-          if (previous) {
-            setAmbulanceHeading(bearingDegrees(previous, location));
-          }
-          previousAmbulanceLocationRef.current = location;
-
-          setGpsLocation(location);
-
-          setGpsError("");
-
-          setLastUpdated(
-            new Date()
-          );
-
-          // -------------------------------------------
-          // SEND ACTUAL GPS TO BACKEND
-          // -------------------------------------------
-
-          try {
-
-            const response =
-              await fetch(
-                `${BACKEND_URL}/api/ambulance/location`,
-                {
-                  method: "POST",
-
-                  headers: {
-                    "Content-Type":
-                      "application/json",
-                  },
-
-                  body:
-                    JSON.stringify({
-                      ambulanceId:
-                        deviceAmbulanceId,
-
-                      latitude,
-
-                      longitude,
-
-                      accuracy:
-                        position.coords.accuracy,
-                      heading: Number.isFinite(position.coords.heading)
-                        ? position.coords.heading
-                        : ambulanceHeading,
-                      destination: HOSPITAL_LOCATION_NAME,
-                      emergencyCategory: patientEmergencyCategory,
-                      priorityLevel: priorityLevel || 'red',
-                      priorityColor,
-                      tripStage,
-                    }),
-                }
-              );
-
-            if (
-              !response.ok
-            ) {
-
-              throw new Error(
-                `Backend returned ${response.status}`
-              );
-
-            }
-
-            const data =
-              await response.json();
-
-            console.log(
-              "🚑 Actual Ambulance GPS sent:",
-              data
-            );
-
-          } catch (error) {
-
-            console.error(
-              "Ambulance backend GPS error:",
-              error.message
-            );
-
-          }
-
-        },
-
-        (error) => {
-
-          console.warn(
-            "Ambulance GPS Error:",
-            error.message
-          );
-
-          setGpsError(
-            "Ambulance GPS permission allow nahi hui."
-          );
-
-        },
-
-        {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 20000,
-        }
-      );
-
-    return () => {
-
-      navigator.geolocation.clearWatch(
-        id
-      );
-
+            accuracy,
+            heading: Number.isFinite(position.coords.heading)
+              ? position.coords.heading
+              : null,
+            destination: HOSPITAL_LOCATION_NAME,
+            emergencyCategory: patientEmergencyCategory,
+            priorityLevel: priorityLevel || "red",
+            priorityColor,
+            tripStage,
+          }),
+        });
+        if (!response.ok) throw new Error(`Backend returned ${response.status}`);
+      } catch (error) {
+        // GPS must keep working even if the network/backend is temporarily down.
+        console.warn("Ambulance GPS backend sync failed:", error.message);
+      }
     };
 
-  }, [gpsEnabled, deviceAmbulanceId, patientEmergencyCategory, tripStage]);
+    const handleError = (error) => {
+      console.warn("Ambulance GPS error:", error);
+      if (error.code === 1) {
+        setGpsError("Location permission denied. Mobile Chrome me Location + Precise Location allow karein.");
+      } else if (error.code === 2) {
+        setGpsError("Mobile GPS location unavailable. Phone Location/GPS ON karein aur thodi der open area me wait karein.");
+      } else {
+        setGpsError("Real GPS fix nahi mila. Location ON karke dobara try karein.");
+      }
+    };
+
+    const options = {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 20000,
+    };
+
+    // getCurrentPosition forces an immediate permission/fix request on mobile.
+    navigator.geolocation.getCurrentPosition(handlePosition, handleError, options);
+    watchId = navigator.geolocation.watchPosition(handlePosition, handleError, options);
+
+    return () => {
+      alive = false;
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [gpsEnabled, deviceAmbulanceId, patientEmergencyCategory, priorityLevel, priorityColor, tripStage]);
 
   // ===================================================
   // TRAFFIC CLEARANCE REQUEST FROM ORIGINAL DASHBOARD
@@ -1362,20 +1281,7 @@ export default function LiveMap({
           MAP
       ================================================= */}
 
-      <div
-        className="map emmc-live-map"
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "500px",
-          minHeight: "500px",
-          overflow: "hidden",
-          touchAction: "none",
-          overscrollBehavior: "contain",
-          WebkitUserSelect: "none",
-          userSelect: "none",
-        }}
-      >
+      <div className="map">
 
         <MapContainer
           center={mapCenter}
@@ -1383,16 +1289,15 @@ export default function LiveMap({
           style={{
             height: "100%",
             width: "100%",
+            touchAction: "none",
           }}
           dragging={true}
           touchZoom={true}
           scrollWheelZoom={true}
           doubleClickZoom={true}
           zoomControl={true}
-          keyboard={false}
+          keyboard={true}
         >
-
-          <MapFollow location={ambulanceLocation} enabled={isValidLocation(gpsLocation)} />
 
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
@@ -1441,6 +1346,13 @@ export default function LiveMap({
           {Object.values(ambulanceLocations).map((amb) => {
             const position = [Number(amb.latitude), Number(amb.longitude)];
             const isPrimary = amb.ambulanceId === deviceAmbulanceId;
+
+            // IMPORTANT: do not render a second backend marker for this device.
+            // The marker above uses fresh phone GPS and must remain the only
+            // marker for the current ambulance, otherwise the stale backend
+            // marker can visually sit on top of the moving GPS marker.
+            if (isPrimary) return null;
+
             return (
               <Marker
                 key={`ambulance-${amb.ambulanceId}`}
