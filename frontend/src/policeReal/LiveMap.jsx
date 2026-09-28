@@ -12,18 +12,6 @@ import { io } from "socket.io-client";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-function LiveMapAutoCenter({ location }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (isValidLocation(location)) {
-      map.setView(location, map.getZoom(), { animate: true });
-    }
-  }, [location, map]);
-
-  return null;
-}
-
 // =====================================================
 // CONFIG
 // =====================================================
@@ -131,6 +119,19 @@ function isValidLocation(location) {
       Number(location[1])
     )
   );
+}
+
+function LiveGPSFollow({ location }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!isValidLocation(location)) return;
+
+    // Follow the current REAL GPS position without recreating the map.
+    map.setView(location, map.getZoom(), { animate: false });
+  }, [location, map]);
+
+  return null;
 }
 
 // =====================================================
@@ -358,29 +359,18 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
   const ambulanceLocation = useMemo(() => {
 
     // REAL DEVICE GPS is always the primary source.
-    // Backend/socket data is only a fallback when local GPS is unavailable.
-    if (
-      isValidLocation(
-        gpsLocation
-      )
-    ) {
+    // Backend/socket data is only a fallback when the device GPS is unavailable.
+    if (isValidLocation(gpsLocation)) {
       return gpsLocation;
     }
 
-    if (
-      isValidLocation(
-        backendLocation
-      )
-    ) {
+    if (isValidLocation(backendLocation)) {
       return backendLocation;
     }
 
     return null;
 
-  }, [
-    gpsLocation,
-    backendLocation,
-  ]);
+  }, [gpsLocation, backendLocation]);
 
   // ===================================================
   // ACTUAL AMBULANCE GPS
@@ -388,30 +378,11 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
 
   const actualAmbulanceGPS =
     useMemo(() => {
-
-      // Alerts/distance calculations must use the real device GPS first.
-      if (
-        isValidLocation(
-          gpsLocation
-        )
-      ) {
-        return gpsLocation;
-      }
-
-      if (
-        isValidLocation(
-          backendLocation
-        )
-      ) {
-        return backendLocation;
-      }
-
+      // Distance/alert calculations must use the real device GPS first.
+      if (isValidLocation(gpsLocation)) return gpsLocation;
+      if (isValidLocation(backendLocation)) return backendLocation;
       return null;
-
-    }, [
-      gpsLocation,
-      backendLocation,
-    ]);
+    }, [gpsLocation, backendLocation]);
 
   // ===================================================
   // ACTUAL POLICE DISTANCE
@@ -1200,7 +1171,7 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
             true,
 
           maximumAge:
-            0,
+            2000,
 
           timeout:
             10000,
@@ -1398,18 +1369,7 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           MAP
       ================================================= */}
 
-      <div
-        className="map"
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "500px",
-          minHeight: "500px",
-          overflow: "hidden",
-          touchAction: "none",
-          overscrollBehavior: "contain",
-        }}
-      >
+      <div className="map">
 
         <MapContainer
           center={
@@ -1433,17 +1393,13 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           keyboard={false}
         >
 
+          <LiveGPSFollow
+            location={ambulanceMode ? ambulanceLocation : trafficPoliceLocation}
+          />
+
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-
-          <LiveMapAutoCenter
-            location={
-              isValidLocation(ambulanceLocation)
-                ? ambulanceLocation
-                : trafficPoliceLocation
-            }
           />
 
           {/* ===========================================
