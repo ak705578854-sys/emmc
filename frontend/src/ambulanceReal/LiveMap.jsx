@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
+  useMap,
   TileLayer,
   Marker,
   Popup,
@@ -118,6 +119,23 @@ function isValidLocation(location) {
       Number(location[1])
     )
   );
+}
+
+
+// =====================================================
+// LIVE MAP FOLLOW
+// =====================================================
+// Keeps the map centered on the device's freshest GPS without
+// changing the user's selected zoom level.
+function MapFollow({ location, enabled = true }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!enabled || !isValidLocation(location)) return;
+    map.setView(location, map.getZoom(), { animate: false });
+  }, [location, enabled, map]);
+
+  return null;
 }
 
 // =====================================================
@@ -346,9 +364,8 @@ export default function LiveMap({
   // ===================================================
 
   const ambulanceLocation = useMemo(() => {
-
-    // The phone's fresh GPS is always the primary source on the
-    // ambulance device. Backend/socket data is only a fallback.
+    // The device GPS is authoritative for this ambulance dashboard.
+    // Backend/socket data is only a fallback until the phone gets its first fix.
     if (isValidLocation(gpsLocation)) {
       return gpsLocation;
     }
@@ -358,20 +375,18 @@ export default function LiveMap({
     }
 
     return null;
-
   }, [gpsLocation, backendLocation]);
 
   // ===================================================
   // ACTUAL AMBULANCE GPS
   // ===================================================
 
-  const actualAmbulanceGPS =
-    useMemo(() => {
-      // Use the freshest device GPS for route, alerts and coordinates.
-      if (isValidLocation(gpsLocation)) return gpsLocation;
-      if (isValidLocation(backendLocation)) return backendLocation;
-      return null;
-    }, [gpsLocation, backendLocation]);
+  const actualAmbulanceGPS = useMemo(() => {
+    // Always use the freshest local phone GPS for distance/alerts.
+    if (isValidLocation(gpsLocation)) return gpsLocation;
+    if (isValidLocation(backendLocation)) return backendLocation;
+    return null;
+  }, [gpsLocation, backendLocation]);
 
   // ===================================================
   // ACTUAL POLICE DISTANCE
@@ -1125,13 +1140,8 @@ export default function LiveMap({
         },
 
         {
-          enableHighAccuracy:
-            true,
-
-          // Never reuse a stale cached mobile position.
+          enableHighAccuracy: true,
           maximumAge: 0,
-
-          // Give the phone GPS more time to obtain a fresh fix.
           timeout: 20000,
         }
       );
@@ -1339,9 +1349,9 @@ export default function LiveMap({
         <small style={{ display: "block", marginTop: "6px" }}>This device sends only its real GPS location to the EMMC backend. Use a different unique ID on every ambulance phone.</small>
       </div>
 
-      {/* AMBULANCE CONTROLS — always visible above the map */}
+      {/* POLICE CONTROLS — always visible above the map */}
       <div className="map-top-controls">
-        <div className="map-live-label">🚑 Ambulance {deviceAmbulanceId} • 🟢 REAL GPS</div>
+        <div className="map-live-label">🚔 Traffic Police • {AUTHORIZED_POLICE_ID} • 🟢 LIVE GPS</div>
         <div className="map-control-buttons">
           <button className="map-stop-button" onClick={onStopGPS}>⛔ STOP GPS</button>
           <button className="map-logout-button" onClick={onLogout}>🚪 LOGOUT</button>
@@ -1364,7 +1374,6 @@ export default function LiveMap({
           overscrollBehavior: "contain",
           WebkitUserSelect: "none",
           userSelect: "none",
-          WebkitTouchCallout: "none",
         }}
       >
 
@@ -1374,7 +1383,6 @@ export default function LiveMap({
           style={{
             height: "100%",
             width: "100%",
-            touchAction: "none",
           }}
           dragging={true}
           touchZoom={true}
@@ -1383,6 +1391,8 @@ export default function LiveMap({
           zoomControl={true}
           keyboard={false}
         >
+
+          <MapFollow location={ambulanceLocation} enabled={isValidLocation(gpsLocation)} />
 
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
