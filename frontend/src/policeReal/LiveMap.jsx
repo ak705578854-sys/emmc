@@ -6,7 +6,6 @@ import {
   Popup,
   Polyline,
   Circle,
-  useMap,
 } from "react-leaflet";
 import { io } from "socket.io-client";
 import L from "leaflet";
@@ -119,19 +118,6 @@ function isValidLocation(location) {
       Number(location[1])
     )
   );
-}
-
-function LiveGPSFollow({ location }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!isValidLocation(location)) return;
-
-    // Follow the current REAL GPS position without recreating the map.
-    map.setView(location, map.getZoom(), { animate: false });
-  }, [location, map]);
-
-  return null;
 }
 
 // =====================================================
@@ -358,8 +344,7 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
 
   const ambulanceLocation = useMemo(() => {
 
-    // REAL DEVICE GPS is always the primary source.
-    // Backend/socket data is only a fallback when the device GPS is unavailable.
+    // REAL DEVICE GPS MUST ALWAYS WIN over an older backend/socket position.
     if (isValidLocation(gpsLocation)) {
       return gpsLocation;
     }
@@ -378,10 +363,18 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
 
   const actualAmbulanceGPS =
     useMemo(() => {
-      // Distance/alert calculations must use the real device GPS first.
-      if (isValidLocation(gpsLocation)) return gpsLocation;
-      if (isValidLocation(backendLocation)) return backendLocation;
+
+      // Distance/alerts must use the REAL phone GPS whenever available.
+      if (isValidLocation(gpsLocation)) {
+        return gpsLocation;
+      }
+
+      if (isValidLocation(backendLocation)) {
+        return backendLocation;
+      }
+
       return null;
+
     }, [gpsLocation, backendLocation]);
 
   // ===================================================
@@ -1189,6 +1182,76 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
   }, []);
 
   // ===================================================
+  // POLICE DEVICE REAL GPS
+  // ===================================================
+  // Keep the police map tied to the phone's own live GPS. This is
+  // intentionally separate from ambulance GPS so the two roles never
+  // overwrite each other. The backend/socket remains the shared source
+  // for other dashboards.
+  useEffect(() => {
+    if (ambulanceMode) return;
+    if (!navigator.geolocation) {
+      setGpsError("This browser/device does not support Geolocation.");
+      return;
+    }
+
+    let cancelled = false;
+    const id = navigator.geolocation.watchPosition(
+      async (position) => {
+        if (cancelled) return;
+
+        const latitude = Number(position.coords.latitude);
+        const longitude = Number(position.coords.longitude);
+        if (!isValidCoordinate(latitude, longitude)) return;
+
+        const location = [latitude, longitude];
+        setGpsLocation(location);
+        setGpsError("");
+        setLastUpdated(new Date());
+
+        // Update this map immediately, then publish the same REAL GPS
+        // position so other clients see the moving police marker.
+        setTrafficPoliceLocation(location);
+        setTrafficPoliceLive(true);
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/traffic-police/location`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              policeId: AUTHORIZED_POLICE_ID,
+              latitude,
+              longitude,
+              accuracy: position.coords.accuracy,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Backend returned ${response.status}`);
+          }
+        } catch (error) {
+          console.warn("Police backend GPS update failed:", error.message);
+          // Local GPS remains visible even if the backend is temporarily unavailable.
+        }
+      },
+      (error) => {
+        console.warn("Police GPS Error:", error.message);
+        setGpsError("Police GPS permission allow nahi hui.");
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 10000,
+      }
+    );
+
+    return () => {
+      cancelled = true;
+      navigator.geolocation.clearWatch(id);
+    };
+  }, [ambulanceMode]);
+
+  // ===================================================
   // ROUTE CALCULATION
   // ===================================================
 
@@ -1383,7 +1446,6 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           style={{
             height: "100%",
             width: "100%",
-            touchAction: "none",
           }}
           dragging={true}
           touchZoom={true}
@@ -1392,10 +1454,6 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           zoomControl={true}
           keyboard={false}
         >
-
-          <LiveGPSFollow
-            location={ambulanceMode ? ambulanceLocation : trafficPoliceLocation}
-          />
 
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
