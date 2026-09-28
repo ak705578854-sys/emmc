@@ -289,6 +289,9 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
     "Waiting for authorized Traffic Police GPS..."
   );
 
+  const previousPoliceLocationRef = useRef(null);
+  const localPoliceGpsRef = useRef(false);
+
   // ===================================================
   // ALERT
   // ===================================================
@@ -344,18 +347,28 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
 
   const ambulanceLocation = useMemo(() => {
 
-    // REAL DEVICE GPS MUST ALWAYS WIN over an older backend/socket position.
-    if (isValidLocation(gpsLocation)) {
+    if (
+      isValidLocation(
+        gpsLocation
+      )
+    ) {
       return gpsLocation;
     }
 
-    if (isValidLocation(backendLocation)) {
+    if (
+      isValidLocation(
+        backendLocation
+      )
+    ) {
       return backendLocation;
     }
 
     return null;
 
-  }, [gpsLocation, backendLocation]);
+  }, [
+    backendLocation,
+    gpsLocation,
+  ]);
 
   // ===================================================
   // ACTUAL AMBULANCE GPS
@@ -364,18 +377,28 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
   const actualAmbulanceGPS =
     useMemo(() => {
 
-      // Distance/alerts must use the REAL phone GPS whenever available.
-      if (isValidLocation(gpsLocation)) {
-        return gpsLocation;
+      if (
+        isValidLocation(
+          backendLocation
+        )
+      ) {
+        return backendLocation;
       }
 
-      if (isValidLocation(backendLocation)) {
-        return backendLocation;
+      if (
+        isValidLocation(
+          gpsLocation
+        )
+      ) {
+        return gpsLocation;
       }
 
       return null;
 
-    }, [gpsLocation, backendLocation]);
+    }, [
+      backendLocation,
+      gpsLocation,
+    ]);
 
   // ===================================================
   // ACTUAL POLICE DISTANCE
@@ -920,14 +943,12 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           return;
         }
 
-        setTrafficPoliceLocation([
-          latitude,
-          longitude,
-        ]);
+        // Do not replace a fresh phone GPS fix with an older API value.
+        if (!localPoliceGpsRef.current) {
+          setTrafficPoliceLocation([latitude, longitude]);
+        }
 
-        setTrafficPoliceLive(
-          true
-        );
+        setTrafficPoliceLive(true);
 
         setPoliceLastUpdated(
           data?.lastUpdated
@@ -948,17 +969,11 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           error.message
         );
 
-        setTrafficPoliceLocation(
-          null
-        );
-
-        setTrafficPoliceLive(
-          false
-        );
-
-        setPoliceStatus(
-          "Waiting for authorized Traffic Police LIVE GPS..."
-        );
+        if (!localPoliceGpsRef.current) {
+          setTrafficPoliceLocation(null);
+          setTrafficPoliceLive(false);
+          setPoliceStatus("Waiting for authorized Traffic Police LIVE GPS...");
+        }
 
       }
 
@@ -1001,255 +1016,92 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
   }, []);
 
   // ===================================================
-  // AMBULANCE DEVICE GPS
+  // DEVICE GPS — AMBULANCE OR TRAFFIC POLICE
   // ===================================================
 
   useEffect(() => {
-
-    // Police map only RECEIVES ambulance GPS. It must never send the police
-    // phone's GPS as an ambulance location.
-    if (!ambulanceMode || !gpsEnabled) {
+    if (!gpsEnabled) {
       setGpsError("");
       return;
     }
 
-    if (!deviceAmbulanceId.trim()) {
+    if (ambulanceMode && !deviceAmbulanceId.trim()) {
       setGpsError("This ambulance device has no assigned Ambulance ID.");
       return;
     }
 
-    if (
-      !navigator.geolocation
-    ) {
-
-      setGpsError(
-        "This browser/device does not support Geolocation."
-      );
-
-      return;
-    }
-
-    const id =
-      navigator.geolocation.watchPosition(
-
-        async (position) => {
-
-          const latitude =
-            Number(
-              position.coords.latitude
-            );
-
-          const longitude =
-            Number(
-              position.coords.longitude
-            );
-
-          // -------------------------------------------
-          // VALIDATE ACTUAL GPS
-          // -------------------------------------------
-
-          if (
-            !isValidCoordinate(
-              latitude,
-              longitude
-            )
-          ) {
-
-            console.warn(
-              "Invalid ambulance GPS ignored"
-            );
-
-            return;
-          }
-
-          const location = [
-            latitude,
-            longitude,
-          ];
-
-          // -------------------------------------------
-          // LOCAL ACTUAL GPS
-          // -------------------------------------------
-
-          const previous = previousAmbulanceLocationRef.current;
-          if (previous) {
-            setAmbulanceHeading(bearingDegrees(previous, location));
-          }
-          previousAmbulanceLocationRef.current = location;
-
-          setGpsLocation(location);
-
-          setGpsError("");
-
-          setLastUpdated(
-            new Date()
-          );
-
-          // -------------------------------------------
-          // SEND ACTUAL GPS TO BACKEND
-          // -------------------------------------------
-
-          try {
-
-            const response =
-              await fetch(
-                `${BACKEND_URL}/api/ambulance/location`,
-                {
-                  method: "POST",
-
-                  headers: {
-                    "Content-Type":
-                      "application/json",
-                  },
-
-                  body:
-                    JSON.stringify({
-                      ambulanceId:
-                        deviceAmbulanceId,
-
-                      latitude,
-
-                      longitude,
-
-                      accuracy:
-                        position.coords.accuracy,
-                    }),
-                }
-              );
-
-            if (
-              !response.ok
-            ) {
-
-              throw new Error(
-                `Backend returned ${response.status}`
-              );
-
-            }
-
-            const data =
-              await response.json();
-
-            console.log(
-              "🚑 Actual Ambulance GPS sent:",
-              data
-            );
-
-          } catch (error) {
-
-            console.error(
-              "Ambulance backend GPS error:",
-              error.message
-            );
-
-          }
-
-        },
-
-        (error) => {
-
-          console.warn(
-            "Ambulance GPS Error:",
-            error.message
-          );
-
-          setGpsError(
-            "Ambulance GPS permission allow nahi hui."
-          );
-
-        },
-
-        {
-          enableHighAccuracy:
-            true,
-
-          maximumAge:
-            2000,
-
-          timeout:
-            10000,
-        }
-      );
-
-    return () => {
-
-      navigator.geolocation.clearWatch(
-        id
-      );
-
-    };
-
-  }, []);
-
-  // ===================================================
-  // POLICE DEVICE REAL GPS
-  // ===================================================
-  // Keep the police map tied to the phone's own live GPS. This is
-  // intentionally separate from ambulance GPS so the two roles never
-  // overwrite each other. The backend/socket remains the shared source
-  // for other dashboards.
-  useEffect(() => {
-    if (ambulanceMode) return;
     if (!navigator.geolocation) {
       setGpsError("This browser/device does not support Geolocation.");
       return;
     }
 
-    let cancelled = false;
-    const id = navigator.geolocation.watchPosition(
+    const watchId = navigator.geolocation.watchPosition(
       async (position) => {
-        if (cancelled) return;
-
         const latitude = Number(position.coords.latitude);
         const longitude = Number(position.coords.longitude);
         if (!isValidCoordinate(latitude, longitude)) return;
 
         const location = [latitude, longitude];
-        setGpsLocation(location);
         setGpsError("");
-        setLastUpdated(new Date());
 
-        // Update this map immediately, then publish the same REAL GPS
-        // position so other clients see the moving police marker.
-        setTrafficPoliceLocation(location);
-        setTrafficPoliceLive(true);
+        if (ambulanceMode) {
+          const previous = previousAmbulanceLocationRef.current;
+          if (previous) setAmbulanceHeading(bearingDegrees(previous, location));
+          previousAmbulanceLocationRef.current = location;
+          setGpsLocation(location);
+          setLastUpdated(new Date());
+        } else {
+          const previous = previousPoliceLocationRef.current;
+          previousPoliceLocationRef.current = location;
+          localPoliceGpsRef.current = true;
+          setTrafficPoliceLocation(location);
+          setTrafficPoliceLive(true);
+          setPoliceLastUpdated(new Date());
+          setPoliceStatus("LIVE GPS • Authorized TP001");
+          if (previous) setLastUpdated(new Date());
+        }
 
         try {
-          const response = await fetch(`${BACKEND_URL}/api/traffic-police/location`, {
+          const endpoint = ambulanceMode
+            ? `${BACKEND_URL}/api/ambulance/location`
+            : `${BACKEND_URL}/api/traffic-police/location`;
+          const payload = ambulanceMode
+            ? {
+                ambulanceId: deviceAmbulanceId,
+                latitude,
+                longitude,
+                accuracy: position.coords.accuracy,
+                heading: Number.isFinite(position.coords.heading) ? position.coords.heading : null,
+              }
+            : {
+                policeId: AUTHORIZED_POLICE_ID,
+                latitude,
+                longitude,
+                accuracy: position.coords.accuracy,
+                heading: Number.isFinite(position.coords.heading) ? position.coords.heading : null,
+              };
+
+          const response = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              policeId: AUTHORIZED_POLICE_ID,
-              latitude,
-              longitude,
-              accuracy: position.coords.accuracy,
-            }),
+            body: JSON.stringify(payload),
           });
-
-          if (!response.ok) {
-            throw new Error(`Backend returned ${response.status}`);
-          }
+          if (!response.ok) throw new Error(`Backend returned ${response.status}`);
+          const data = await response.json().catch(() => ({}));
+          console.log(ambulanceMode ? "🚑 Actual Ambulance GPS sent:" : "🚔 Actual Traffic Police GPS sent:", data);
         } catch (error) {
-          console.warn("Police backend GPS update failed:", error.message);
-          // Local GPS remains visible even if the backend is temporarily unavailable.
+          console.error(ambulanceMode ? "Ambulance backend GPS error:" : "Police backend GPS error:", error.message);
         }
       },
       (error) => {
-        console.warn("Police GPS Error:", error.message);
-        setGpsError("Police GPS permission allow nahi hui.");
+        console.warn(ambulanceMode ? "Ambulance GPS Error:" : "Police GPS Error:", error.message);
+        setGpsError("GPS permission allow nahi hui ya location unavailable hai.");
       },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 1000,
-        timeout: 10000,
-      }
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
     );
 
-    return () => {
-      cancelled = true;
-      navigator.geolocation.clearWatch(id);
-    };
-  }, [ambulanceMode]);
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [gpsEnabled, ambulanceMode, deviceAmbulanceId]);
 
   // ===================================================
   // ROUTE CALCULATION
@@ -1432,7 +1284,21 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           MAP
       ================================================= */}
 
-      <div className="map">
+      <div
+        className="map emmc-live-map"
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "500px",
+          minHeight: "500px",
+          overflow: "hidden",
+          touchAction: "none",
+          overscrollBehavior: "contain",
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          WebkitTouchCallout: "none",
+        }}
+      >
 
         <MapContainer
           center={
@@ -1446,6 +1312,7 @@ export default function LiveMap({ onStopGPS, onLogout, ambulanceId = "", ambulan
           style={{
             height: "100%",
             width: "100%",
+            touchAction: "none",
           }}
           dragging={true}
           touchZoom={true}
