@@ -6,7 +6,6 @@ import {
   Popup,
   Polyline,
   Circle,
-  useMap,
 } from "react-leaflet";
 import { io } from "socket.io-client";
 import L from "leaflet";
@@ -119,19 +118,6 @@ function isValidLocation(location) {
       Number(location[1])
     )
   );
-}
-
-function LiveGPSFollow({ location }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!isValidLocation(location)) return;
-
-    // Follow the current REAL GPS position without recreating the map.
-    map.setView(location, map.getZoom(), { animate: false });
-  }, [location, map]);
-
-  return null;
 }
 
 // =====================================================
@@ -361,8 +347,7 @@ export default function LiveMap({
 
   const ambulanceLocation = useMemo(() => {
 
-    // REAL DEVICE GPS is always the primary source.
-    // Backend/socket data is only a fallback when the device GPS is unavailable.
+    // REAL DEVICE GPS MUST ALWAYS WIN over an older backend/socket position.
     if (isValidLocation(gpsLocation)) {
       return gpsLocation;
     }
@@ -381,10 +366,18 @@ export default function LiveMap({
 
   const actualAmbulanceGPS =
     useMemo(() => {
-      // Distance/alert calculations must use the real device GPS first.
-      if (isValidLocation(gpsLocation)) return gpsLocation;
-      if (isValidLocation(backendLocation)) return backendLocation;
+
+      // Distance/alerts must use the REAL phone GPS whenever available.
+      if (isValidLocation(gpsLocation)) {
+        return gpsLocation;
+      }
+
+      if (isValidLocation(backendLocation)) {
+        return backendLocation;
+      }
+
       return null;
+
     }, [gpsLocation, backendLocation]);
 
   // ===================================================
@@ -1374,7 +1367,6 @@ export default function LiveMap({
           style={{
             height: "100%",
             width: "100%",
-            touchAction: "none",
           }}
           dragging={true}
           touchZoom={true}
@@ -1383,8 +1375,6 @@ export default function LiveMap({
           zoomControl={true}
           keyboard={false}
         >
-
-          <LiveGPSFollow location={ambulanceLocation} />
 
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
